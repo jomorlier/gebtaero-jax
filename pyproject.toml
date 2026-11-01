@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gebtaero-jax"
+version = "0.1.0"
+description = "Differentiable nonlinear aeroelasticity of high-aspect-ratio wings (JAX port of GEBTAero, with Aeroelasticity.jl-style coupled models)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE", "NOTICE.md"]
+authors = [{ name = "gebtaero-jax contributors" }]
+keywords = ["aeroelasticity", "flutter", "beam", "GEBT", "JAX", "automatic differentiation", "composite"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Intended Audience :: Science/Research",
+]
+dependencies = ["jax>=0.4.30", "numpy>=1.24", "scipy>=1.10", "matplotlib>=3.7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-xdist", "ruff>=0.5", "nbmake", "jupyter", "ipykernel"]
+
+[project.urls]
+"Original GEBTAero" = "https://github.com/mid2SUPAERO/GEBTAero"
+"Aeroelasticity.jl" = "https://github.com/byuflowlab/Aeroelasticity.jl"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gebtaero_jax"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 140
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E731", "B023", "E741", "B905"]
