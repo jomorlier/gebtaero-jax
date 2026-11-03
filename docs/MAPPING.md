@@ -83,3 +83,16 @@ Status legend: ✅ ported · 🔁 replaced by a different (documented) approach 
   high-frequency roots; they are ignored above `fmax_hz` (default 1000 Hz, like GEBTAero's `FreqLim`) and the
   eigen-pencil is equilibrated before solving.
 * **Time integration.** Generalised-α with `rho_inf = 0.9` by default (`rho_inf = 1` ≈ GEBT's trapezoid).
+
+## 4bis. Mode tracking and eigen-adjoint (S. He's note, `sensitivity_modetracking.ipynb`)
+
+| Source | gebtaero-jax | Status / notes |
+|---|---|---|
+| He: residual `r_i = [A phi_i - lambda_i phi_i ; phi_i^T phi_i - 1]` | `tracking.bordered_residual`: `[(K + sM) phi ; e^T phi - 1]` | 🔁 complex, non-symmetric pencil of the beam; analytic normalisation `e^T phi = 1` |
+| He: `dr/dq = [[A - lambda I, -phi], [2 phi^T, 0]]` | `tracking.bordered_jacobian` (real split) | ✅ |
+| He: `g_i = phi_r^T phi_i`, `f = 1 - sum g_i / N` | `tracking.mac_function`, `tracked_sensitivities().mac_loss` | 🔁 MAC (phase/scale invariant, complex shapes) |
+| He: adjoint `(dr/dq)^T psi = dg/dq`, `dg/dx = -psi^T dr/dx` | `tracking.eigenpair_adjoint` | ✅ one LU per mode, one back-substitution per function, `dr/dx` matrix-free by AD |
+| notebook §3.1 MAC step-to-step / reference tracking | `tracking.track` (+ `stability.mode_sweep`) | ✅ Hungarian assignment |
+| notebook §3.3 complex modes, left eigenvector | `stability.eigenvalue_gradient` (used to verify the adjoint) | ✅ |
+| notebook §4.2–4.4 flutter-point bordered system and adjoint | `tracking.flutter_gradient_adjoint` | 🔁 modal flutter point (`Re s = 0`) instead of the p–k flutter equations |
+| notebook §4.5 flutter-constrained optimisation | notebook 08 (CRM-like wingbox, 32 variables) | ✅ |

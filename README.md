@@ -58,6 +58,11 @@ nonlinear transient simulation (generalised-α in `lax.scan`, differentiable), t
 with a coupling function and get `linearize`, `steady_state`, `dense_eigen`, `correlate_eigenmodes`,
 critical-value search, gradients and time marching. Typical section with all four aero models included.
 
+**Mode tracking + eigen-adjoint** (`gx.tracking`) — S. He's bordered eigenvalue adjoint generalised to the complex,
+non-symmetric pencil of the beam: MAC tracking against reference shapes (Hungarian assignment), adjoint gradients of the
+MAC loss, tracked frequencies/damping and the flutter speed with **one bordered solve per tracked function** and
+matrix-free AD partials — cost independent of the number of design variables.
+
 **Migration** — reader for GEBTAero's Fortran `.dat` input files.
 
 ## Validation
@@ -75,13 +80,14 @@ critical-value search, gradients and time marching. Typical section with all fou
 | Typical section divergence (all aero models) | 2.82843 | analytic √8 |
 | AD vs finite differences (static, eigen, flutter) | 6–8 digits | — |
 
-All of the above are in the test suite (`pytest`, ~5 min).
+All of the above are in the test suite (`pytest`, ~6 min).
+The tracking adjoint is checked against the left/right-eigenvector formula (1e-7) and finite differences.
 
 ## Install
 
 ```bash
 pip install -e ".[dev]"     # jax, numpy, scipy, matplotlib (+ pytest, jupyter for dev)
-pytest -n auto              # 30 tests
+pytest -n auto              # 34 tests
 ```
 
 64-bit floats are enabled on import (`jax_enable_x64`). CPU is the expected target; systems are small and dense.
@@ -97,6 +103,7 @@ pytest -n auto              # 30 tests
 | `05_composite_tailoring_with_gradients` | CLT plate, ply-angle sweep, exact dV_f/dθ, SLSQP tailoring | GEBTAero `PlateComposite.py`, `examples/optimisation` |
 | `06_typical_section_aeroelasticity_jl` | 4 aero models, root loci, Theodorsen check, simulation, sensitivities | AJ `section-stability`, `section-simulation` |
 | `07_custom_coupled_models` | user-defined submodels: cubic spring + flap actuator, LCO, gradient through a simulation | AJ coupling framework |
+| `08_crm_mode_tracking_adjoint` | CRM-like swept wing, mode crossing and MAC tracking, He's eigen-adjoint (complex, matrix-free) vs FD and left/right formula, cost vs n_x, 32-variable wingbox sizing with flutter + tracked-mode constraints | S. He's note, `sensitivity_modetracking.ipynb` |
 
 ## Package layout
 
@@ -111,6 +118,7 @@ src/gebtaero_jax/
   stability.py      flutter/divergence search, V-g sweeps, eigenvalue & critical-speed gradients
   coupled.py        generic CoupledModel framework (Aeroelasticity.jl)
   section.py        typical section + aero submodels, exact Theodorsen reference
+  tracking.py       MAC mode tracking, bordered eigen-adjoint (He), tracked-mode & flutter gradients
   integrators.py    generalised-alpha (lax.scan)
   legacy.py         GEBTAero .dat reader
   plotting.py       V-g plots, 3D wing shapes

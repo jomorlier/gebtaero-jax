@@ -35,7 +35,7 @@ from .beam import FlightCondition, tangent_matrices
 from .solvers import ModalResult, _tangent_jit, modal_analysis, solve_static, static_residual_norm
 from .wing import BeamModel
 
-_REL_NOISE = 1e-8
+_REL_NOISE = 1e-6
 
 Builder = Callable[[Any, float], "tuple[BeamModel, FlightCondition]"]
 
@@ -84,7 +84,7 @@ def _flutter_growth(res: ModalResult | None, imag_tol, fmax_hz):
         idx = idx[res.freq_hz[idx] <= fmax_hz]
     if len(idx) == 0:
         return -np.inf, None
-    # real parts below 1e-8 |s| are round-off on neutrally stable (spurious) roots
+    # real parts below 1e-6 |s| are round-off on neutrally stable (spurious) roots
     g = res.eigvals.real[idx] - _REL_NOISE * np.maximum(np.abs(res.eigvals[idx]), 1.0)
     k = int(np.argmax(g))
     return g[k], idx[k]
