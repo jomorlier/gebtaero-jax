@@ -63,6 +63,11 @@ non-symmetric pencil of the beam: MAC tracking against reference shapes (Hungari
 MAC loss, tracked frequencies/damping and the flutter speed with **one bordered solve per tracked function** and
 matrix-free AD partials — cost independent of the number of design variables.
 
+**Concentrated masses** — `BeamModel.with_point_mass` (motors, booms, pods, stores), differentiable.
+
+**HALE examples** — `examples/hale_wings.py`: beam models of the EcoHALE and Dawn solar-HALE wings reconstructed from
+their published designs (assumptions documented), with an AD trim (`trim_alpha`) at any load factor.
+
 **Migration** — reader for GEBTAero's Fortran `.dat` input files.
 
 ## Validation
@@ -87,7 +92,7 @@ The tracking adjoint is checked against the left/right-eigenvector formula (1e-7
 
 ```bash
 pip install -e ".[dev]"     # jax, numpy, scipy, matplotlib (+ pytest, jupyter for dev)
-pytest -n auto              # 34 tests
+pytest -n auto              # 35 tests
 ```
 
 64-bit floats are enabled on import (`jax_enable_x64`). CPU is the expected target; systems are small and dense.
@@ -103,6 +108,7 @@ pytest -n auto              # 34 tests
 | `05_composite_tailoring_with_gradients` | CLT plate, ply-angle sweep, exact dV_f/dθ, SLSQP tailoring | GEBTAero `PlateComposite.py`, `examples/optimisation` |
 | `06_typical_section_aeroelasticity_jl` | 4 aero models, root loci, Theodorsen check, simulation, sensitivities | AJ `section-stability`, `section-simulation` |
 | `07_custom_coupled_models` | user-defined submodels: cubic spring + flap actuator, LCO, gradient through a simulation | AJ coupling framework |
+| `09_hale_aeroelasticity_ecohale_dawn` | two solar HALE designs (EcoHALE CO₂ optimum, DawnDesignTool point design): mass closure, modes, trimmed nonlinear deflection, flutter vs. root incidence, gust in time, battery placement, adjoint wall redistribution at constant mass | `EcoHALE_AeroSandbox_1.ipynb`, [DawnDesignTool](https://github.com/peterdsharpe/DawnDesignTool) |
 | `08_crm_mode_tracking_adjoint` | CRM-like swept wing, mode crossing and MAC tracking, He's eigen-adjoint (complex, matrix-free) vs FD and left/right formula, cost vs n_x, 32-variable wingbox sizing with flutter + tracked-mode constraints | S. He's note, `sensitivity_modetracking.ipynb` |
 
 ## Package layout

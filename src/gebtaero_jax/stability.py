@@ -99,10 +99,13 @@ class CriticalPoint:
     frequency_hz: float
     eigval: complex | None = None
     found: bool = True
+    unstable_at_vmin: bool = False
 
     def __repr__(self) -> str:
+        if self.unstable_at_vmin:
+            return f"CriticalPoint({self.kind}: already unstable at V_min = {self.velocity:.3g} m/s)"
         if not self.found:
-            return f"CriticalPoint({self.kind}: not found in range)"
+            return f"CriticalPoint({self.kind}: none in range)"
         return f"CriticalPoint({self.kind}: V={self.velocity:.4f} m/s, f={self.frequency_hz:.4f} Hz)"
 
 
@@ -130,7 +133,7 @@ def flutter_speed(
     Vs = np.linspace(v_min, v_max, n_grid)
     prev_V, prev_g = Vs[0], g(Vs[0])
     if prev_g > 0:
-        return CriticalPoint("flutter", v_min, np.nan, None, found=False)
+        return CriticalPoint("flutter", v_min, np.nan, None, found=False, unstable_at_vmin=True)
     for V in Vs[1:]:
         gv = g(V)
         if gv > 0:

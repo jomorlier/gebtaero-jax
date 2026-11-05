@@ -13,7 +13,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from ._pytree import pytree_dataclass, static_field
-from .cross_section import CrossSection
+from .cross_section import CrossSection, mass_matrix
 
 
 class Aero(IntEnum):
@@ -156,6 +156,28 @@ class BeamModel:
 
     def with_aero(self, aero: Aero | int) -> BeamModel:
         return self.replace(aero=int(aero))
+
+    def with_point_mass(self, s, mass, offset=(0.0, 0.0), inertia=(0.0, 0.0, 0.0)) -> BeamModel:
+        """Add a concentrated mass (motor, boom, pod, store) to the element containing arclength ``s``.
+
+        The mass is smeared over that element (consistent with the element's one-point quadrature).
+
+        Parameters
+        ----------
+        s : arclength from the root along the beam (m)
+        mass : kg
+        offset : ``(y_b, z_b)`` position of its CG in the cross-section frame (m), ``y_b`` towards the
+            leading edge
+        inertia : own mass moments of inertia ``(I_xx, I_yy, I_zz)`` about its CG, frame b (kg m^2)
+        """
+        edges = jnp.concatenate([jnp.zeros(1), jnp.cumsum(self.dL)])
+        e = jnp.clip(jnp.searchsorted(edges, s, side="right") - 1, 0, self.n_el - 1)
+        onehot = (jnp.arange(self.n_el) == e).astype(float)  # trace-safe (works inside jit/grad)
+        y, z = offset
+        Ixx, Iyy, Izz = inertia
+        M = mass_matrix(mass, mass * z**2, mass * y**2, mass * y * z, -y, z)
+        M = M + jnp.diag(jnp.array([0.0, 0.0, 0.0, Ixx, Iyy, Izz]))
+        return self.replace(mass=self.mass + onehot[:, None, None] * M[None] / self.dL[:, None, None])
 
     def node_arclength(self) -> np.ndarray:
         return np.concatenate([[0.0], np.cumsum(np.asarray(self.dL))])

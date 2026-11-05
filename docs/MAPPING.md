@@ -96,3 +96,17 @@ Status legend: ✅ ported · 🔁 replaced by a different (documented) approach 
 | notebook §3.3 complex modes, left eigenvector | `stability.eigenvalue_gradient` (used to verify the adjoint) | ✅ |
 | notebook §4.2–4.4 flutter-point bordered system and adjoint | `tracking.flutter_gradient_adjoint` | 🔁 modal flutter point (`Re s = 0`) instead of the p–k flutter equations |
 | notebook §4.5 flutter-constrained optimisation | notebook 08 (CRM-like wingbox, 32 variables) | ✅ |
+
+## 4ter. Solar HALE design tools (notebook 09)
+
+| Source | gebtaero-jax | Status / notes |
+|---|---|---|
+| EcoHALE notebook: optimum planform, masses, speeds, Sandwich-1 properties, 10–60 % wingbox | `examples/hale_wings.EcoHALEWing` | ✅ published values; wall distribution reconstructed (spars at 1 mm bound), t/c calibrated on the published 1.7 m gust deflection |
+| EcoHALE notebook: gust point (V_D = 1.4 V, n = 1.1, 3.4 m/s) | notebook 09 §3 (nonlinear, trimmed) | ✅ |
+| EcoHALE notebook: 15 % deflection limit, linear beam | geometrically exact deflection, linear comparison | 🔁 |
+| EcoHALE: buckling / stress / material catalogue / CO₂ objective | — | ⏳ (stays in the AeroSandbox notebook) |
+| DawnDesignTool: point design (AIAA 2021-2451 Table 2), break 0.67, taper 0.5, booms 0.8, HALE_03, 3 g | `examples/hale_wings.DawnWing` | ✅ published values; CFRP tube spar sized by 3 g bending stress, secondary/solar/boom masses estimated |
+| DawnDesignTool: `mass_wing_spar` (mass only) | tube spar stiffness + mass, nonlinear deflection, flutter | 🔁 |
+| DawnDesignTool: trajectory / energy / solar / propulsion models | — | ⏳ (out of scope: these size the aircraft; we check its aeroelasticity) |
+| motors, booms, pods as point masses | `BeamModel.with_point_mass` | ➕ |
+| trim (lift = weight) | `hale_wings.trim_alpha` (Newton, AD through the nonlinear equilibrium) | ➕ |

@@ -82,3 +82,22 @@ def test_tracking_follows_modes_through_a_crossing():
         macs.append(tr.mac)
     assert any(not np.array_equal(r, np.arange(4)) for r in ranks)  # frequencies did cross
     assert np.min(macs) > 0.99  # every tracked mode kept its shape (uncoupled modes)
+
+
+def test_point_mass_adds_mass_and_is_differentiable():
+    import jax
+
+    cs = gx.CrossSection.from_isotropic(2e4, 4e6, 1e4).with_mass(0.75, 1e-4, 0.1)
+    m = gx.straight_wing(cs, 16.0, 1.0, 0.0, 8, aero=gx.Aero.NONE)
+    m2 = m.with_point_mass(15.9, 2.0, offset=(0.2, 0.0))
+    np.testing.assert_allclose(float(jnp.sum(m2.mass[:, 0, 0] * m2.dL)), 12.0 + 2.0, rtol=1e-12)
+    x = gx.solve_static(m2, gx.FlightCondition(gravity=9.81), n_load_steps=3)
+    np.testing.assert_allclose(float(gx.root_loads(m2, x)[0][2]), 14.0 * 9.81, rtol=1e-10)
+
+    def tip(mp):  # traced point mass (inside grad): implicit derivative of the static deflection
+        mm = m.with_point_mass(15.9, mp)
+        return gx.tip_displacement(mm, gx.solve_static(mm, gx.FlightCondition(gravity=9.81), n_load_steps=2))[2]
+
+    g = jax.grad(tip)(2.0)
+    fd = (tip(2.0 + 1e-4) - tip(2.0 - 1e-4)) / 2e-4
+    np.testing.assert_allclose(g, fd, rtol=1e-5)
