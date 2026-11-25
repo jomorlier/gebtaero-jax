@@ -10,7 +10,12 @@
 * [**Aeroelasticity.jl**](https://github.com/byuflowlab/Aeroelasticity.jl) (BYU FLOW Lab): a modular framework that
   couples implicit submodels (2D aerodynamics, typical section, GXBeam, rigid body) into monolithic systems.
 
-Both are rebuilt around one idea: **write the residual `R(ẋ, x, p, t) = 0`, let JAX do the calculus.**
+and extends them with worked examples drawn from further sources: S. He's mode-tracking eigen-adjoint (notebook 08, CRM-like
+wing), the EcoHALE and [DawnDesignTool](https://github.com/peterdsharpe/DawnDesignTool) solar-HALE designs (notebook 09)
+and the AePW3 Large Deflection Working Group **Pazy wing** benchmark from
+[UM-A2SRL/AePW3-LDWG](https://github.com/UM-A2SRL/AePW3-LDWG) (notebook 10).
+
+Both codes are rebuilt around one idea: **write the residual `R(ẋ, x, p, t) = 0`, let JAX do the calculus.**
 Tangent stiffness, mass matrices, the implicit derivatives of nonlinear equilibria, eigenvalue sensitivities and
 the gradient of the flutter speed with respect to *any* design parameter (ply angles, stiffnesses, CG position,
 controller gains…) all come from automatic differentiation. No Fortran, no compiled dependencies, no hand-derived
@@ -85,12 +90,15 @@ their published designs (assumptions documented), with an AD trim (`trim_alpha`)
 | Patil flutter / divergence (m/s) | 32.15 / 37.23 | GEBTAero: 32.12 / 37.25; Patil et al.: 32.21 / 37.29 |
 | Patil, gravity-deformed flutter (m/s) | 23.13 | GEBTAero: 23.35 (approximate hand-coded aero Jacobian) |
 | Pazy wing modes (Hz) | 4.19, 28.49, 42.01, 83.10, 105.89 | UM/NAST beam: 4.19, 28.49, 41.88, 83.06, 105.89 |
-| Pazy hump onset at 3 / 5 / 7° (m/s) | see notebook 10 | UM/NAST 50.6 / 43.1 / 38.5; experiment 49 / 43 / 38 |
+| Pazy tip deflection, 7° root AoA, 30 / 40 m/s (% semispan) | 14.0 / 25.3 | UM/NAST 13.6 / 25.0; experiment 14.4 / 25.9 |
+| Pazy hump onset at 3 / 5 / 7° (m/s) | 51.0 / 43.7 / 39.1 | UM/NAST 50.6 / 43.1 / 38.5; experiment 49 / 43 / 38 |
+| Pazy hump offset at 3 / 5 / 7° (m/s) | 56.6 / 47.8 / 42.2 | UM/NAST 55.3 / 46.7 / 41.2; experiment 55 / 48 / — |
 | Typical section V_f: Wagner / Peters | 2.170 / 2.165 | AJ: "around 2.2"; exact Theodorsen (in-repo): 2.184 |
 | Typical section divergence (all aero models) | 2.82843 | analytic √8 |
 | AD vs finite differences (static, eigen, flutter) | 6–8 digits | — |
 
-All of the above are in the test suite (`pytest`, ~6 min).
+Most of the above are in the test suite (`pytest`, ~3–10 min depending on cores); the Pazy rows at 3° and 7°, the offsets
+and the deflections at 30 / 40 m/s come from notebook 10 (the tests cover the modes, the 7° deflection sweep and the 5° onset).
 The tracking adjoint is checked against the left/right-eigenvector formula (1e-7) and finite differences.
 
 ## Install
@@ -113,9 +121,9 @@ pytest -n auto              # 39 tests
 | `05_composite_tailoring_with_gradients` | CLT plate, ply-angle sweep, exact dV_f/dθ, SLSQP tailoring | GEBTAero `PlateComposite.py`, `examples/optimisation` |
 | `06_typical_section_aeroelasticity_jl` | 4 aero models, root loci, Theodorsen check, simulation, sensitivities | AJ `section-stability`, `section-simulation` |
 | `07_custom_coupled_models` | user-defined submodels: cubic spring + flap actuator, LCO, gradient through a simulation | AJ coupling framework |
+| `08_crm_mode_tracking_adjoint` | CRM-like swept wing, mode crossing and MAC tracking, He's eigen-adjoint (complex, matrix-free) vs FD and left/right formula, cost vs n_x, 32-variable wingbox sizing with flutter + tracked-mode constraints | S. He's note, `sensitivity_modetracking.ipynb` |
 | `09_hale_aeroelasticity_ecohale_dawn` | two solar HALE designs (EcoHALE CO₂ optimum, DawnDesignTool point design): mass closure, modes, trimmed nonlinear deflection, flutter vs. root incidence, gust in time, battery placement, adjoint wall redistribution at constant mass | `EcoHALE_AeroSandbox_1.ipynb`, [DawnDesignTool](https://github.com/peterdsharpe/DawnDesignTool) |
 | `10_pazy_wing_aepw3` | AePW3 Large Deflection Working Group benchmark: Pazy beam model from UM-A2SRL/AePW3-LDWG, static deflection up to 50 % semispan vs UM/NAST and experiment, frequency migration with step-to-step MAC tracking (crossing vs veering), hump-mode onset/offset vs root AoA, AD sensitivities and first-order UQ, soft flutter in time | Ritter et al. J. Aircraft 2026; [AePW3-LDWG](https://github.com/UM-A2SRL/AePW3-LDWG) |
-| `08_crm_mode_tracking_adjoint` | CRM-like swept wing, mode crossing and MAC tracking, He's eigen-adjoint (complex, matrix-free) vs FD and left/right formula, cost vs n_x, 32-variable wingbox sizing with flutter + tracked-mode constraints | S. He's note, `sensitivity_modetracking.ipynb` |
 
 ## Package layout
 
@@ -134,9 +142,16 @@ src/gebtaero_jax/
   integrators.py    generalised-alpha (lax.scan)
   legacy.py         GEBTAero .dat reader
   plotting.py       V-g plots, 3D wing shapes
+examples/
+  crm_wing.py       CRM-like swept wing with a sized wingbox (notebook 08)
+  hale_wings.py     EcoHALE and Dawn solar-HALE wings, AD trim (notebook 09)
+  pazy_wing.py      Pazy wing from the AePW3-LDWG equivalent-beam data (notebook 10)
+  data/             goland.dat (GEBTAero), pazy/ (AePW3-LDWG data and reference results, see its README)
+notebooks/          01-10, executed, with outputs
+tests/              pytest suite (39 tests)
 ```
 
-See [`docs/MAPPING.md`](docs/MAPPING.md) for a line-by-line mapping of both original projects onto this package,
+See [`docs/MAPPING.md`](docs/MAPPING.md) for a line-by-line mapping of every source project onto this package,
 including what differs and what is not ported.
 
 ## Conventions
@@ -149,5 +164,5 @@ use GEBTAero's `[Re(s)/2π, Im(s)/2π]`.
 
 ## License
 
-GPL-3.0-or-later, like GEBTAero's Python code. See [`NOTICE.md`](NOTICE.md) for the GEBT (W. Yu) and
-Aeroelasticity.jl (MIT) attributions.
+GPL-3.0-or-later, like GEBTAero's Python code. See [`NOTICE.md`](NOTICE.md) for the GEBT (W. Yu),
+Aeroelasticity.jl (MIT) and AePW3-LDWG Pazy data attributions.
