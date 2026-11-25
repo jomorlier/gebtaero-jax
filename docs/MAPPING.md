@@ -110,3 +110,15 @@ Status legend: ✅ ported · 🔁 replaced by a different (documented) approach 
 | DawnDesignTool: trajectory / energy / solar / propulsion models | — | ⏳ (out of scope: these size the aircraft; we check its aeroelasticity) |
 | motors, booms, pods as point masses | `BeamModel.with_point_mass` | ➕ |
 | trim (lift = weight) | `hale_wings.trim_alpha` (Newton, AD through the nonlinear equilibrium) | ➕ |
+
+## 4quater. AePW3 Large Deflection Working Group — Pazy wing (notebook 10)
+
+| Source | gebtaero-jax | Status / notes |
+|---|---|---|
+| AePW3-LDWG `00_Models/01_Pazy_Technion/02_Models_Beam` (coordinates, inertia, stiffness, skin0/skin1) | `examples/pazy_wing.PazyWing` | ✅ data unchanged (xlsx → csv); 4×4 strain-based stiffness inverted into the GEBT flexibility, shear rigid; nodal CONM2 inertia → sectional mass via `cross_section.rigid_body_mass_matrix` |
+| spanwise lift slope `aero_coeff.txt` | `BeamModel.a0` per element | ✅ moment-slope column not used |
+| LDWG task 1: static aeroelastic sweeps (3/5/7°) | notebook 10 §2 | ✅ vs UM/NAST and Technion experiment |
+| LDWG task 2: wind-off frequencies vs deflection | notebook 10 §3, `convert_state`, `tracking.reference_from_tracked` | ✅ step-to-step MAC tracking |
+| LDWG task 3: hump-mode onset/offset vs AoA | notebook 10 §4 | ✅ vs UM/NAST, experiment and LDWG mean (Table 4) |
+| UVLM / DLM / CFD entries, tip-loss strip variant, stall / LCO | — | ⏳ |
+| — | onset-speed gradients through the deformed equilibrium, first-order UQ | ➕ |

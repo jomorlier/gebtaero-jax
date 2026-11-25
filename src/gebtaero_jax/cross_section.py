@@ -161,3 +161,16 @@ class CrossSection:
         """Equivalent GJ, EI2, EI3 (inverse of diagonal flexibility terms)."""
         f = jnp.diag(self.flexibility)
         return {"GJ": _safe_inv(f[3]), "EI2": _safe_inv(f[4]), "EI3": _safe_inv(f[5])}
+
+
+def rigid_body_mass_matrix(m, r, I_cg) -> jnp.ndarray:
+    """6x6 mass matrix of a rigid body about a reference point (GEBT ordering, frame b).
+
+    ``m`` mass, ``r`` (3,) position of its CG relative to the reference point, ``I_cg`` (3,3) inertia tensor
+    about its CG. Gives ``[P; H] = M [V; Omega]`` with ``P = m (V + Omega x r)``, ``H = I_O Omega + m r x V``.
+    Divide by a length to obtain a sectional (per unit length) mass matrix.
+    """
+    r = jnp.asarray(r, dtype=float)
+    rt = jnp.array([[0.0, -r[2], r[1]], [r[2], 0.0, -r[0]], [-r[1], r[0], 0.0]])
+    m = jnp.asarray(m, dtype=float)
+    return jnp.block([[m * jnp.eye(3), -m * rt], [m * rt, jnp.asarray(I_cg, dtype=float) - m * rt @ rt]])

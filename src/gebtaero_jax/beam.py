@@ -285,3 +285,16 @@ def node_positions(model: BeamModel, x: jnp.ndarray | None = None):
         return pts
     u, _ = node_displacements(model, x)
     return pts + u
+
+
+def convert_state(x: jnp.ndarray, model_from: BeamModel, model_to: BeamModel) -> jnp.ndarray:
+    """Map a state between models that differ only by their aerodynamic states (e.g. Peters -> wind-off).
+
+    Structural unknowns are copied; aerodynamic states are dropped or set to zero.
+    """
+    root, E, tip = split_state(model_from, x)
+    ns = model_to.n_states
+    Es = E[:, :18]
+    if ns:
+        Es = jnp.concatenate([Es, jnp.zeros((E.shape[0], ns))], axis=1)
+    return jnp.concatenate([root, Es.ravel(), tip])

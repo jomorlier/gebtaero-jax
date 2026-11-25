@@ -33,3 +33,9 @@ The GEBTAero computation core is derived from **GEBT** by Prof. Wenbin Yu
 framework by Taylor McDonnell (BYU FLOW Lab), MIT license. gebtaero-jax re-implements its coupled-model
 formulation, 2D aerodynamic models and typical-section model in JAX (no code is copied; the algorithms follow the
 published documentation and source).
+
+## AePW3 Large Deflection Working Group data (Pazy wing)
+`examples/data/pazy` contains data from <https://github.com/UM-A2SRL/AePW3-LDWG> (C. Riso and C. E. S. Cesnik): the equivalent
+beam model of the Technion Pazy wing and UM/NAST and experimental reference results, converted from xlsx to csv without changes.
+The built-up FEM and the experiments are by Technion (D. Raveh and co-workers). Please cite the publications listed in
+`examples/data/pazy/README.md`.

@@ -18,6 +18,7 @@ jax.config.update("jax_enable_x64", True)
 from . import aerodynamics, coupled, integrators, plotting, rotations, section, tracking  # noqa: E402
 from .beam import (  # noqa: E402
     FlightCondition,
+    convert_state,
     node_displacements,
     node_positions,
     peters_matrices,
@@ -59,7 +60,7 @@ __version__ = "0.1.0"
 
 __all__ = [
     "aerodynamics", "coupled", "integrators", "plotting", "rotations", "section", "tracking", "CoupledModel",
-    "Aero", "BeamModel", "CriticalPoint", "CrossSection", "FlightCondition", "Frame",
+    "Aero", "BeamModel", "convert_state", "CriticalPoint", "CrossSection", "FlightCondition", "Frame",
     "IsoMaterial", "Laminate", "ModalResult", "ModeSweep", "OrthoMaterial", "Ply",
     "TimeHistory", "Wing", "WingSection", "critical_speeds", "divergence_speed",
     "divergence_speed_and_grad", "eigenvalue_gradient", "flutter_speed",

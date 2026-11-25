@@ -117,6 +117,12 @@ def reference_modes(model: BeamModel, res: ModalResult, n: int, labels: Sequence
     return ReferenceModes(S, res.freq_hz[osc], labels)
 
 
+def reference_from_tracked(model: BeamModel, tracked: TrackedModes, labels: Sequence[str]) -> ReferenceModes:
+    """New references from the modes just tracked (step-to-step tracking along a continuation path)."""
+    S = np.stack([normalise_shape(v) for v in shapes(model, tracked.vectors).T], axis=1)
+    return ReferenceModes(S, tracked.freq_hz, list(labels))
+
+
 @dataclass
 class TrackedModes:
     """Modes of the current design paired with the reference shapes."""
