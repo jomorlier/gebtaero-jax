@@ -147,6 +147,7 @@ examples/
   hale_wings.py     EcoHALE and Dawn solar-HALE wings, AD trim (notebook 09)
   pazy_wing.py      Pazy wing from the AePW3-LDWG equivalent-beam data (notebook 10)
   data/             goland.dat (GEBTAero), pazy/ (AePW3-LDWG data and reference results, see its README)
+docs/               MAPPING.md (source projects -> code), CONVENTIONS.md (frames and signs), figures/
 notebooks/          01-10, executed, with outputs
 tests/              pytest suite (39 tests)
 ```
@@ -156,11 +157,18 @@ including what differs and what is not ported.
 
 ## Conventions
 
+![Frames: aircraft frame a and beam frame b](docs/figures/frames_top_view.svg)
+
 Frame *a* (aircraft): `x_a` forward, `y_a` along the right wing, `z_a` down. Cross-section frame *b*: `x_b` beam
-axis, `y_b` towards the leading edge, `z_b = x_b × y_b`. Strains `(γ11, 2γ12, 2γ13, κ1, κ2, κ3)`.
-`a` is Theodorsen's reference-axis position in semi-chords (positive aft); `nu` the CG offset (positive aft).
-Root reactions follow GEBT's sign convention (`gx.lift_force` returns the net upward load). Eigenvalue tables
-use GEBTAero's `[Re(s)/2π, Im(s)/2π]`.
+axis (outboard), `y_b` towards the leading edge, `z_b = x_b × y_b` (up for an unswept wing). Strains
+`(γ11, 2γ12, 2γ13, κ1, κ2, κ3)`: extension, shear, torsion, flap and lag bending. `a` is Theodorsen's
+reference-axis position in semi-chords (positive aft); `nu` the CG offset (positive aft). Sweep is positive aft,
+dihedral positive up, twist positive nose up; α > 0 gives upward lift. Displacements are in frame *a*, so an upward
+deflection is negative `z_a`. Root reactions follow GEBT's sign convention (`gx.lift_force` returns the net upward
+load). Eigenvalue tables use GEBTAero's `[Re(s)/2π, Im(s)/2π]`.
+
+See [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) for the full description, the cross-section drawing and every sign
+convention of the inputs and outputs.
 
 ## License
 
